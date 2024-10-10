@@ -1,0 +1,97 @@
+<body>
+<div class="pear-container">
+    <div class="layui-card">
+        <div class="layui-card-body">
+
+    <div id="situationOperationForm"></div>
+        </div>
+    </div>
+
+    <div class="layui-card">
+        <div class="layui-card-body" id="cardTable">
+    <table class="layui-hide" id="tableSearch"></table>
+        </div>
+    </div>
+</div>
+
+<script>
+    layui.use(['table', 'dropdown', 'form', 'laydate', 'formInput', 'tools'], function () {
+        var table = layui.table,
+            form = layui.form,
+            formInput = layui.formInput,
+            laydate = layui.laydate,
+            tools = layui.tools,
+            $ = layui.jquery,
+            dropdown = layui.dropdown;
+
+        var tableData = []
+        var urlUser = '/api/v2/user'
+        {
+            var formConfig = [
+                {type:"text", name:"A", placeholder:"Field A", layAffix:"clear", class:"layui-input", value:"", icon:"layui-icon-username", colClass:"layui-col-md2"},
+                {type:"text", name:"B", placeholder:"Field B", layAffix:"clear", class:"layui-input", value:"",colClass:"layui-col-md2"},
+                {type:"text", name:"C", placeholder:"Field C", layAffix:"clear", class:"layui-input demo-table-search-date", value:"", icon: "layui-icon-date",colClass:"layui-col-md2"},
+                {type:"select", name:"D", children:[{text:"option1", value:"1"}]},
+                {type:"button", name:"E", placeholder:"提交", class:"layui-btn", colClass:"layui-col-md1 layui-col-md-offset1", value:"", icon: "layui-icon-search", layFilter:"button"},
+                {type:"button", name:"F", placeholder:"清理", class:"layui-btn layui-btn-primary", buttonType:"reset", icon: "layui-icon-clear", layFilter:""},
+
+            ]
+
+            formInput.render({
+                elem: '#situationOperationForm',
+                data: formConfig,
+            })
+            form.on("submit(button)", data =>{
+                console.log(data.field)
+                return false
+            })
+
+        }
+
+        {
+            tools.ajax(urlUser, 'get', "", false).then(res=>{
+                tableData = res.data.list
+            table.render({
+                elem: '#tableSearch',
+                // url: '', // 此处为静态模拟数据，实际使用时需换成真实接口
+                skin:'line',
+                data: tableData,
+                cols: [[
+                    {type: 'checkbox', title: '😊'}, // 单选框
+                    {field:'id', title: 'ID', sort: true},
+                    {field:'username', title: '用户名', },
+                    {field:'gender', title: '性别', sort: true},
+                    {field:'age', title: '年龄', },
+                    {field:'information', title: '信息'},
+                    {field:'experience', title: '积分', sort: true, width:80}
+                ]],
+                page: true,
+                height: "full-230"
+            });
+            })
+            // 日期
+            laydate.render({
+                elem: '.demo-table-search-date'
+            });
+            // 搜索提交
+            form.on('submit(demo-table-search)', function(data){
+                var field = data.field; // 获得表单字段
+                // 执行搜索重载
+                table.reload('ID-table-demo-search', {
+                    page: {
+                        curr: 1 // 重新从第 1 页开始
+                    },
+                    where: field // 搜索的字段
+                });
+                layer.msg('搜索成功<br>此处为静态模拟数据，实际使用时换成真实接口即可');
+                return false; // 阻止默认 form 跳转
+            });
+        }
+
+
+
+    })
+</script>
+
+
+</body>

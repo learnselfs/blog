@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+<body>
+
+
+<div class="layui-fluid layui-row" id="table-menu" >
+
+<div class="layui-col-sm-offset1 layui-col-sm10" style="height: 80vh">
+    <div class="layui-tab" lay-filter="tab-manager">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="tab-manager-base">基础配置</li>
+            <li lay-id="tab-manager-menu">菜单授权</li>
+            <li lay-id="tab-manager-api">接口授权</li>
+            <li lay-id="4">标签4</li>
+            <li lay-id="5">标签5</li>
+        </ul>
+
+        <div class="layui-tab-content layui-row layui-col-space16">
+
+            <div class="layui-tab-item layui-show">
+            <div class=" ">
+
+
+                <form class="layui-form" action="" lay-filter="demo-val-filter">
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">角色名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="name" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item layui-form-text">
+                        <label class="layui-form-label">描述信息</label>
+                        <div class="layui-input-block">
+                            <textarea placeholder="请输入" class="layui-textarea" name="information"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="submit" class="layui-btn" lay-submit lay-filter="submit-role">立即提交</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="layui-btn-container" style="margin-bottom: 6px; text-align: center;">
+                        <button type="button" class="layui-btn layui-btn-normal" id="LAY-component-form-setval">赋值</button>
+                        <button type="button" class="layui-btn layui-btn-normal" id="LAY-component-form-getval">取值</button>
+                    </div>
+
+                </form>
+            </div>
+            </div>
+            <div class="layui-tab-item layui-row ">
+                <div class=" layui-col-md12">
+                    <div class=" layui-col-md2">
+                        <ul  class="layui-menu" id="manager-menu"></ul>
+                    </div>
+                    <div class="  layui-col-md8">
+                        <div id="manager-menu-tree"></div>
+                    </div>
+
+                </div>
+
+                <div class=" layui-col-md12" style="margin-bottom: 1px; text-align: center; position:fixed; bottom: 0px">
+                    <button type="button" class="layui-btn layui-btn-normal layui-col-md2 " id="manager-menu-tree-submit">提交</button>
+                    <!--                    <button type="button" class="layui-btn layui-btn-normal" id="">取值</button>-->
+                </div>
+
+            </div>
+            <div class="layui-tab-item layui-row">
+               <div class="layui-col-md1 layui-col-md-offset1">
+                   b
+               </div>
+                <div class="layui-col-md8">
+                    <div id="manager-api"></div>
+                </div>
+            </div>
+            <div class="layui-tab-item">内容-4</div>
+            <div class="layui-tab-item">内容-5</div>
+        </div>
+    </div>
+
+
+
+</div>
+<!--<div class="layui-btn-container">-->
+<!--    <button class="layui-btn" lay-on="tabAdd">新增 tab 项</button>-->
+<!--    <button class="layui-btn" lay-on="tabDelete">删除「标签4」</button>-->
+<!--    <button class="layui-btn" lay-on="tabChange">切换到「标签3」</button>-->
+<!--    <button class="layui-btn" lay-on="next">「下一步」</button>-->
+<!--</div>-->
+</div>
+
+<script>
+layui.use(['layer','tools','toast','context', 'tree', 'menu', 'carousel', 'table', 'context'], function() {
+    var $ = layui.jquery,
+        util = layui.util,
+        context = layui.context,
+        tools = layui.tools,
+        element = layui.element,
+        laydate = layui.laydate,
+        form = layui.form,
+        dropdown = layui.dropdown,
+        menu = layui.menu,
+        tree = layui.tree;
+
+    var urlRole = "/api/v2/rbac/role"
+    var urlMenu = "/api/v2/menu"
+    var urlSwagger = "/api.json"
+    var urlPermission = "/api/v2/rbac/permission"
+
+    form.render();
+
+    // 提交事件
+    form.on('submit(submit-role)', function(data){
+        var field = data.field; // 获取表单字段值
+        // 显示填写结果，仅作演示用
+        // 此处可执行 Ajax 等操作
+        // tools.ajax("/api/v2/rbac/role", "post", field, false).then((res)=>{
+        //    toast.success({title:"角色创建成功"});
+        // })
+        tools.ajax(urlRole, 'post', field,false).then((res)=>{
+            field.roleId = res.data.id
+            context.set('role', field)
+            element.tabChange("tab-manager", 'tab-manager-menu')
+        })
+        // …
+        return false; // 阻止默认 form 跳转
+    });
+
+    // 2. 菜单授权
+    // 2.1 请求获取menu数据
+    tools.ajax(urlMenu).then((res)=>{
+        var data = res.data.menu
+        let menu=$("#manager-menu")
+        // menu select
+        menuParse(menu, data)
+
+       //2.2 生成 menu tree
+        tree.render({
+            elem: '#manager-menu-tree',
+            data: data,
+            id: 'manager-menu-tree',
+            customName: { // 自定义 data 字段名 --- 2.8.14+
+                id: 'id',
+                title: 'title',
+                children: 'children',
+            },
+            showCheckbox: true,
+            edit: ['add', 'update', 'del'], // 开启节点的右侧操作图标
+            click: (obj)=>{
+                console.log(obj.data.id)
+            }
+        });
+    })
+    // 2.1 点击导航栏
+    dropdown.on('click(manager-menu)', function(options){
+
+        console.log(this, options);
+        // 显示 - 仅用于演示
+        // layer.msg(util.escape(JSON.stringify(options)));
+    });
+    // 2.2 点击 提交按钮
+    $('#manager-menu-tree-submit').click(function (){
+        var menu =  tree.getChecked("manager-menu-tree")
+        var role = context.getObject("role")
+        var data = {}
+        data.menu = menu
+        data.roleId = role.roleId
+        data.name = role.name
+        tools.ajax(urlPermission, "post", data, false).then((res)=>{
+            console.log(res)
+        })
+    });
+
+    let menuParse = (menu, data)=>{
+        data.forEach((e)=>{
+            let list = $(`<li  layui-options="{mid='${e.id}' title='${e.title}'}" >
+                            <div class="layui-menu-body-title">
+                                ${e.title}
+                            </div>
+                            </li>`)
+            if (Array.isArray(e.children)) {
+                <!--                 lay-options="{type: 'group', id='${e.id}', title='${e.title}'}"-->
+                list = $(`<li class="layui-menu-item-group layui-menu-item-down"    >
+                            <div class="layui-menu-body-title">
+                                ${e.title} <i class="layui-icon layui-icon-up"></i>
+                            </div> </li>`)
+                var menuChildren =($("<ul></ul>"))
+                menuParse(menuChildren, e.children)
+                list.append(menuChildren)
+                // menu.append(menuChildren)
+            }
+            menu.append(list)
+        })
+    }
+
+
+    // 3 接口管理
+    tools.ajax(urlSwagger, 'get').then((res)=>{
+        console.log(res)
+        collapse(res)
+    })
+    let collapse = (res)=>{
+        let apiDiv = $("manager-api")
+        var a = $(`<div class="layui-collapse">
+            <div class="layui-colla-item">
+                <div class="layui-colla-title">Collapse Title 1</div>
+                <div class="layui-colla-content">
+                    <p>Content 1</p>
+                </div>
+            </div>
+        </div>`)
+       apiDiv.append(a)
+   }
+
+})
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1">-->
+    <title></title>
+<!--    <link rel="stylesheet" href="/admin/css/other/manager.css" />-->
+    <!-- 请勿在项目正式环境中引用该 layui.css 地址 -->
+
+<!--    <link href="/component/pear/css/pear.css" rel="stylesheet">-->
+<!--    <link href="/component/layui/css/layui.css" rel="stylesheet">-->
+</head>
+<body>
+
+
+<div class="layui-fluid layui-row" id="table-menu" >
+
+<div class="layui-col-sm-offset1 layui-col-sm10" style="height: 90vh">
+    <form class="layui-form layui-row layui-col-space16">
+        <div class="layui-col-sm3">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-username"></i>
+                </div>
+                <input type="text" name="title" value="" placeholder="标题" class="layui-input" lay-affix="clear">
+            </div>
+        </div>
+        <div class="layui-col-sm3">
+            <div class="layui-input-wrap">
+                <input type="text" name="id" placeholder="标识" lay-affix="clear" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-col-sm3 ">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-date"></i>
+                </div>
+                <input type="text" name="icon" readonly placeholder="图标" class="layui-input demo-table-search-date">
+            </div>
+        </div>
+        <div class="layui-btn-container layui-col-sm3">
+            <button class="layui-btn" lay-submit lay-filter="demo-table-search">Search</button>
+            <button type="reset" class="layui-btn layui-btn-primary">Clear</button>
+        </div>
+    </form>
+
+
+    <table class="layui-hide  " id="ID-treeTable-demo"></table>
+    <script type="text/html" id="TPL-treeTable-demo">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-sm" lay-event="getChecked">获取选中数据</button>
+            <button class="layui-btn layui-btn-sm" lay-event="addData">增加数据</button>
+        </div>
+    </script>
+    <script type="text/html" id="TPL-treeTable-demo-tools">
+        <div class="layui-btn-container">
+            <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>
+            <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="addChild">新增</a>
+            <a class="layui-btn layui-btn-xs" lay-event="more">更多 <i class="layui-icon layui-icon-down"></i></a>
+        </div>
+    </script>
+</div>
+</div>
+
+    <!-- 请勿在项目正式环境中引用该 layui.js 地址 -->
+    <script>
+        layui.use(["layer"],function(){
+            var treeTable = layui.treeTable;
+            var layer = layui.layer;
+            var dropdown = layui.dropdown;
+            var form = layui.form
+            var $ = layui.jquery
+            // 渲染
+            var width = "12%";
+            var inst = treeTable.render({
+                elem: '#ID-treeTable-demo',
+                url: '/api/v2/menu', // 此处为静态模拟数据，实际使用时需换成真实接口
+                parseData: function(res){ // res 即为原始返回的数据
+                    return {
+                        "code": res.code, // 解析接口状态
+                        "msg": res.message, // 解析提示文本
+                        "count": res.data.menu.length, // 解析数据长度
+                        "data": res.data.menu // 解析数据列表
+                    };
+                },
+                defaultToolbar: [
+                    {
+                        // 扩展工具
+                        title: '检索', // 标题
+                        name: 'search', // name
+                        layEvent: 'LAYTABLE_TIPS', // 事件标识
+                        icon: 'layui-icon-search', // 图标 className
+                        onClick: function(obj) { // 点击事件 - 2.9.12+
+                            console.log(obj); // 查看返回的对象成员
+                        }
+                    },
+                    'filter', 'exports', 'print', // 内置工具
+                ],
+                height: 850,
+                // lineStyle: 'height: 70px',   // 自定义样式
+                // width: 200,
+                css: [ // 重设当前表格样式
+                    '#ID-treeTable-demo{padding-right: 145px;}'
+                ].join(''),
+                toolbar: '#TPL-treeTable-demo',
+                cols: [[
+                    {type: 'checkbox',  width: "20px",fixed: 'left' },
+                    {field: 'mid', title: 'ID', width: width, sort: true, fixed: 'left'},
+                    {field: 'title', title: '名称', width: width , sort: true, fixed: 'left',  edit: 'text'},
+                    // {field: 'parentMid', title: '父节点id', width: width, edit: 'text'},
+                    {field: 'id', title: '标识', width: width, sort: true, edit: 'text'},
+                    {field: 'icon', title: 'icon', width: width, edit: 'text'},
+                    {field: 'type', title: '类型', width: width, edit: 'text'},
+                    {field: 'openType', title: '跳转类型', width: width, edit: 'text'},
+                    {field: 'href', title: '链接', width: width, edit: 'text'},
+                    {fixed: 'right', title: "操作", width: "15%", align: "center", toolbar: "#TPL-treeTable-demo-tools"}
+                ]],
+                tree: { // treeTable 特定属性集
+                    customName: {
+                        children: "children",	//自定义「子节点集合」的属性名	string	children
+                        // isParent: "parentMid",	//自定义「是否属于父节点」的属性名	string	isParent
+                        name:"title",	//自定义「节点」属性名	string	name
+                        id:"mid",	//自定义「节点索引」属性名	string	id
+                        pid:"parentMid",	//自定义「父节点索引」属性名	string	parentId
+                        icon:"icon",	//自定义图标的属性名称	string	icon
+                    },
+                    data: {},
+                    view: {},
+                    // 异步加载子节点
+                    // async: {
+                    //     enable: false,
+                    //     url: '/api/v2/menu', // 此处为静态模拟数据，实际使用时需换成真实接口
+                    //     autoParam: ["parentId=id"]
+                    // },
+                    callback: {}
+                },
+                page: true
+            });
+            // 表头工具栏工具事件
+            treeTable.on("toolbar(ID-treeTable-demo)", function (obj) {
+                var config = obj.config;
+                var tableId = config.id;
+                var status = treeTable.checkStatus(tableId);
+                // 获取选中行
+                switch (obj.event){
+
+                    case "getChecked":
+                    if(!status.data.length) return layer.msg('无选中数据');
+                    console.log(status);
+                    layer.alert("当前数据选中已经输出到控制台，<br>您可按 F12 从控制台中查看结果。");
+                    case "addData":
+                        var data = { name: "新节点" };
+                        var newNode2 = treeTable.addNodes(tableId, {
+                            // parentIndex: trData["LAY_DATA_INDEX"],
+                            index: -1,
+                            data: data
+                        })
+                }
+
+            });
+            // 表头工具栏工具事件
+            treeTable.on("edit(ID-treeTable-demo)", function (obj) {
+                var field = obj.field; // 得到修改的字段
+                var value = obj.value // 得到修改后的值
+                var oldValue = obj.oldValue // 得到修改前的值 -- v2.8.0 新增
+                var data = obj.data // 得到所在行所有键值
+                var col = obj.getCol(); // 得到当前列的表头配置属性 -- v2.8.0 新增
+                var method = "post"
+                var url = "/api/v2/menu"
+                if (data.mid) {
+                    method = "put";
+                    url = url+"/"+data.mid;
+                }
+
+                console.log(JSON.stringify())
+                $.ajax({
+                    url:url,
+                    method:method,
+                    data: data,
+                    success: (res)=>{
+                        if (res.code !==0){
+                            layer.msg(res.message, 2)
+                        }
+                    },
+                    error:()=>{
+                        layer.msg("网络错误", 2)
+                    }
+                })
+            });
+
+            // 单元格工具事件
+            treeTable.on('tool('+ inst.config.id +')', function (obj) {
+                var layEvent = obj.event; // 获得 lay-event 对应的值
+                var trElem = obj.tr;
+                var trData = obj.data;
+                var tableId = obj.config.id;
+                if (layEvent === "detail") {
+                    layer.msg("查看操作：" + trData.name);
+                } else if (layEvent === "addChild") {
+                    var data = { id: Date.now(), name: "新节点", parentMid:obj.data.mid };
+
+                    var newNode2 = treeTable.addNodes(tableId, {
+                        parentIndex: trData["LAY_DATA_INDEX"],
+                        index: -1,
+                        data: data
+                    });
+                } else if (layEvent === "more") {
+                    // 下拉菜单
+                    dropdown.render({
+                        elem: this, // 触发事件的 DOM 对象
+                        show: true, // 外部事件触发即显示
+                        align: "right", // 右对齐弹出
+                        data: [
+                            {
+                                title: "修改积分",
+                                id: "edit"
+                            },
+                            {
+                                title: "删除",
+                                id: "del"
+                            }
+                        ],
+                        click: function (menudata) {
+                            if (menudata.id === "del") {
+                                layer.confirm("真的删除行么", function (index) {
+                                    // treeTable.removeNode(tableId, trElem.attr('data-index'))
+                                    // if ((trData.children)){return layer.msg("禁止删除有子项的栏目", {icon:2})}
+                                    $.ajax({
+                                        url: "/api/v2/menu/"+trData.mid,
+                                        method:"delete",
+                                        success:(res)=>{
+                                            if (res.code === 0){return layer.msg("删除成功", {icon:1})}
+                                            else{return layer.msg("删除失败:"+res.message, {icon:2})}
+                                        },
+                                        error: (res)=>{return layer.msg("网络问题:"+res, {icon:2})}
+                                    })
+                                    obj.del(); // 等效如下
+                                    layer.close(index);
+
+                                });
+                            } else if (menudata.id === "edit") {
+                                layer.prompt({
+                                    value: trData.experience,
+                                    title: "输入新的积分"
+                                }, function (value, index) {
+                                    obj.update({ experience: value }); // 等效如下
+                                    // treeTable.updateNode(tableId, trElem.attr('data-index'), {experience: value});
+                                    layer.close(index);
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+
+
+
+
+        form.on('submit(demo-table-search)', function(data){
+            var field = data.field; // 获得表单字段
+            // 执行搜索重载
+
+            treeTable.reload('ID-treeTable-demo', {
+                page: {
+                    curr: 1 // 重新从第 1 页开始
+                },
+                where: field // 搜索的字段
+            });
+            layer.msg(table);
+            return false; // 阻止默认 form 跳转
+        });
+        });
+    </script>
+</body>
+</html>

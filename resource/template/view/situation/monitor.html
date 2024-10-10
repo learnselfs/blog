@@ -1,0 +1,122 @@
+<body>
+<div class="pear-container">
+    <div class="layui-row situation-monitor-count layui-col-space5">
+    </div>
+
+    <div class="layui-row situation-monitor-top">
+    </div>
+
+    <div class="layui-row" >
+        <div class="layui-col-md12" id="situation-monitor-trend" style="height: 200px"></div>
+    </div>
+</div>
+<script>
+    layui.use(['table', 'dropdown', 'echarts'], function () {
+        var table = layui.table,
+            $ = layui.jquery,
+            echarts = layui.echarts,
+            dropdown = layui.dropdown;
+
+        {
+            var count = [
+                {name:"登陆总次数", number:11},
+                {name:"登陆失败次数", number: 1},
+                {name:"当前用户数量", number: 3},
+                {name:"当前数据", number: 5},
+            ]
+            count.forEach(e=>{
+                    var counts = `
+                    <div class="layui-col-md3">
+                      <div class="layui-card" style="background-image: url(/images/background.png); background-size: cover; height: 220px">
+                         <div class="" style="color: #EEEEEE">${e.name}</div>
+
+                         <div class="layui-col-md-offset9 layui-colmd3" style="" >
+                            ${e.number}
+                         </div>
+                      </div>
+                    </div>
+                `
+                $('.situation-monitor-count').append(counts)
+
+            })
+        }
+        {
+        var count = [
+            {name:"Top登陆总次数", number:11},
+            {name:"Top登陆失败次数", number: 1},
+            {name:"Top当前用户数量", number: 3},
+            {name:"Top当前数据", number: 5},
+        ]
+        count.forEach((e, i)=> {
+            var counts = `
+                    <div class="layui-col-md3">
+
+                         <div class="" style="height: 250px" id="situation-monitor-top-${i}" >
+                            ${e.number}
+                         </div>
+                      </div>
+                `
+
+            $('.situation-monitor-count').append(counts)
+            var myChart = echarts.init(document.getElementById("situation-monitor-top-"+i));
+
+            // 指定图表的配置项和数据
+            var option = {
+                title: {
+                    text: e.name
+                },
+                tooltip: {},
+                legend: {
+                    data: ['销量']
+                },
+                xAxis: {
+                },
+                yAxis: {
+                    data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"]
+                },
+                series: [{
+                    name: '销量',
+                    type: 'bar',
+                    data: [5, 20, 36, 10, 10, 20]
+                }]
+            };
+
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+
+
+        })
+        }
+
+        {
+            var myChart = echarts.init(document.getElementById("situation-monitor-trend"));
+
+            // 指定图表的配置项和数据
+            var option = {
+                title: {
+                    text: "name",
+                },
+                tooltip: {},
+                legend: {
+                    data: ['销量']
+                },
+                xAxis: {
+                    data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"]
+                },
+                yAxis: {
+                },
+                series: [{
+                    name: '销量',
+                    type: 'line',
+                    data: [5, 20, 36, 10, 10, 20]
+                }]
+            };
+
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+
+        }
+    })
+</script>
+</body>
+

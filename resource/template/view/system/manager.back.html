@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1">-->
+    <title></title>
+<!--    <link rel="stylesheet" href="/admin/css/other/manager.css" />-->
+    <!-- 请勿在项目正式环境中引用该 layui.css 地址 -->
+
+<!--    <link href="/component/pear/css/pear.css" rel="stylesheet">-->
+<!--    <link href="/component/layui/css/layui.css" rel="stylesheet">-->
+</head>
+<body>
+
+
+<div class="layui-fluid" style="height: 100vh; width: 80vw">
+
+<div class="layui-row" style="height: 80vh">
+
+    <div class="layui-col-sm2 layui-col-sm-offset1">
+        <!--选择树-->
+        <div id="ID-tree"></div>
+    </div>
+
+    <div class="layui-col-sm9">
+    <form class="layui-form"  lay-filter="rbac">
+        <div class="layui-row">
+            <div class="layui-col-sm3">
+                <div class="layui-inline">
+                    <label class="layui-form-label">搜索选择框</label>
+                    <div class="layui-input-inline">
+                        <select id="form-select-user" name="user" lay-verify="required" lay-search>
+                            <option value="">直接选择或搜索选择</option>
+                        </select>
+                    </div>
+<!--                <select id="form-select-user" name="user" lay-search="">-->
+<!--                    <option value="">请选择或搜索用户信息</option>-->
+<!--                </select>-->
+            </div>
+<!--            <div class="layui-col-sm3 layui-col-sm-offset1">-->
+<!--                <select id="form-select-role" name="role" lay-search="">-->
+<!--                    <option value="">请选择或搜索角色信息</option>-->
+<!--                </select>-->
+<!--            </div>-->
+
+            <div class="layui-inline">
+                <label class="layui-form-label">搜索选择框</label>
+                <div class="layui-input-inline">
+                    <select id="form-select-role" name="role" lay-verify="required" lay-search>
+                        <option value="">直接选择或搜索选择</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </form>
+    </div>
+</div>
+
+
+    <div class="layui-row" style="height: 20vh">
+        <div class="layui-col-sm-offset4">
+            <!--提交-->
+            <div class="layui-btn-container">
+                <button type="button" class="layui-btn layui-btn-sm" lay-on="getChecked">获取选中节点数据</button>
+                <button type="button" class="layui-btn layui-btn-sm" lay-on="setChecked">勾选指定节点</button>
+                <button type="button" class="layui-btn layui-btn-sm" lay-on="reload">重载实例</button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- 请勿在项目正式环境中引用该 layui.js 地址 -->
+<!--<script src="/component/layui/layui.js"></script>-->
+<script>
+    layui.use(['layer',"tree","tools", 'carousel', 'element', 'table'], function() {
+        var $ = layui.jquery;
+            layer = layui.layer;
+            tools = layui.tools;
+            tree = layui.tree;
+            util = layui.util;
+            form = layui.form;
+            dropdown = layui.dropdown;
+
+        // console.log(JSON.stringify(PearAdmin.instances))
+        // 模拟数据
+        // var data = [{title:'A-1',id:1,field:'name1',checked:true,spread:true,children:[{title:'B-1-1 可允许跳转',id:3,field:'name11',href:'',children:[{title:'C-1-1-3',id:23,field:'',children:[{title:'D-1-1-3-1',id:24,field:'',children:[{title:'E-1-1-3-1-1',id:30,field:''},{title:'E-1-1-3-1-2',id:31,field:''}]}]},{title:'C-1-1-1',id:7,field:'',children:[{title:'D-1-1-1-1 可允许跳转',id:15,field:'',href:''}]},{title:'C-1-1-2',id:8,field:'',children:[{title:'D-1-1-2-1',id:32,field:''}]}]},{title:'B-1-2',id:4,spread:true,children:[{title:'C-1-2-1',id:9,field:'',disabled:true},{title:'C-1-2-2',id:10,field:''}]},{title:'B-1-3',id:20,field:'',children:[{title:'C-1-3-1',id:21,field:''},{title:'C-1-3-2',id:22,field:''}]}]},{title:'A-2',id:2,field:'',spread:true,children:[{title:'B-2-1',id:5,field:'',spread:true,children:[{title:'C-2-1-1',id:11,field:''},{title:'C-2-1-2',id:12,field:''}]},{title:'B-2-2',id:6,field:'',children:[{title:'C-2-2-1',id:13,field:''},{title:'C-2-2-2',id:14,field:'',disabled:true}]}]},{title:'A-3',id:16,field:'',children:[{title:'B-3-1',id:17,field:'',fixed:true,children:[{title:'C-3-1-1',id:18,field:''},{title:'C-3-1-2',id:19,field:''}]},{title:'B-3-2',id:27,field:'',children:[{title:'C-3-2-1',id:28,field:''},{title:'C-3-2-2',id:29,field:''}]}]}];
+        var data = []
+
+        $.ajax({
+                type: 'get',
+                url: "/api/v2/menu",
+                dataType: 'json',
+                async: false,
+                success: (result) => {
+                   data = result.data.menu;
+                },
+            })
+        // PearAdmin.Ajax("get", "/api/v2/menu", "").then((res)=>{
+        //     data = res.data.menu;
+        //     console.log(data)
+        // })
+            tree.render({
+                elem: '#ID-tree',
+                data: data,
+                showCheckbox: true,  // 是否显示复选框
+                onlyIconControl: true,  // 是否仅允许节点左侧图标控制展开收缩
+                id: 'id',
+                isJump: true, // 是否允许点击节点时弹出新窗口跳转
+                customName: { // 自定义 data 字段名 --- 2.8.14+
+                    id: 'id',
+                    // title: 'username',
+                    // children: 'permission'
+                },
+                click: function(obj){
+                    var data = obj.data;  //获取当前点击的节点数据
+                    layer.msg('状态：'+ obj.state + '<br>节点数据：' + JSON.stringify(data));
+                }
+            });
+        // 用户输入框渲染
+
+        // $.ajax({
+        //     type: 'get',
+        //     url: '/api/v2/user',
+        //     dataType: 'json',
+        //     async: true,
+        //     success: (result) => {
+        //         $.each(result.data.list, (i,v)=>{
+        //             var option
+        //             option = new Option(v.username, v.id)
+        //             $("#form-select-user").append(option)
+        //         })
+        //         form.render("select")
+        //     }
+        // })
+        //
+        // // 角色输入框渲染
+        // $.ajax({
+        //     type: 'get',
+        //     url: '/api/v2/rbac/role',
+        //     dataType: 'json',
+        //     async: true,
+        //     success: (result) => {
+        //         $.each(result.data.role, (i,v)=>{
+        //             var option
+        //             option = new Option(v.name, v.id)
+        //             $("#form-select-role").append(option)
+        //         })
+        //         form.render("select")
+        //     }
+        // })
+        //
+        // tree 渲染
+
+
+
+
+        // 按钮事件
+        util.event('lay-on', {
+            getChecked: function(othis){
+                var checkedData = tree.getChecked('id'); // 获取选中节点的数据
+                data = form.val("rbac")
+                layer.msg(JSON.stringify(data))
+                    // $.ajax({
+                    //     type: 'POST',
+                    //     url: "/api/v2/rbac/permission",
+                    //     // dataType: 'json',
+                    //     data: {"list":checkedData, "name":"个人权限"},
+                    //     async: false,
+                    //     success: (result) => {
+                    //         layer.msg("提交成功"+JSON.stringify(result), {icon:6})
+                    //     },
+                    //     error: (xhr, status, error) => {
+                    //         layer.msg("提交失败"+JSON.stringify(error), {icon:1})
+                    //     },
+                    // })
+                // layer.alert(JSON.stringify(checkedData), {shade:0});
+            },
+            setChecked: function(){
+                tree.setChecked("id", [12, 16]); // 勾选对应 id 值的节点
+            },
+            reload: function(){
+                tree.reload('id', {}); // 重载实例
+            }
+        });
+
+
+
+    });
+</script>
+
+</body>
+</html>
